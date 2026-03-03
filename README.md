@@ -70,6 +70,11 @@ Aplikacija je 100% lokalna, napisana u Python-u sa PyQt5 interfejsom i predstavl
 | 📝 Comment kolona (searchable) | ✅ | ❌ | ❌ | ❌ | ❌ |
 
 ---
+# 🏗 Tehnička Arhitektura
+
+![ZeroBreach UI](tehnicka_arhitektura.png)
+
+---
 
 # 🔐 Sigurnosni Model
 
