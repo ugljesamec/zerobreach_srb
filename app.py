@@ -7,11 +7,11 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 import logging
 
-# ---------- LOGGING ----------
+# LOGGING 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# ---------- APPDATA FOLDER ----------
+# APPDATA FOLDER 
 APP_NAME = "ZeroBreach"
 LOCAL_APPDATA = os.environ.get("LOCALAPPDATA")
 if not LOCAL_APPDATA:
@@ -24,7 +24,7 @@ SALT_FILE = os.path.join(DATA_PATH, "salt.bin")
 DB_FILE = os.path.join(DATA_PATH, "passwords.db")
 LOCK_FILE = os.path.join(DATA_PATH, "lock.dat")
 
-# Resource path for PyInstaller
+# Putanja za PyInstaller
 def resource_path(relative_path):
     """Get absolute path to resource, works for dev and PyInstaller"""
     try:
@@ -35,7 +35,7 @@ def resource_path(relative_path):
 
 ICON_PATH = resource_path("ico.ico")
 
-# ---------- SECURE KEY DERIVATION ----------
+# BEZBEDNO GENERISANJE KLJUČA
 def load_salt():
     """Load salt from file, generate if missing"""
     if os.path.exists(SALT_FILE):
@@ -82,7 +82,7 @@ def decrypt(data: str, key: bytes) -> str:
     f = Fernet(key)
     return f.decrypt(data.encode()).decode()
 
-# ---------- DATABASE ----------
+# BAZA
 def create_db(key: bytes):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
@@ -144,7 +144,7 @@ def delete_entry_db(entry_id):
     conn.close()
     logger.info(f"Entry {entry_id} deleted")
 
-# ---------- PASSWORD GENERATOR ----------
+# GENERISANJE ŠIFRE
 def generate_password(length=16, include_upper=True, include_lower=True, include_digits=True, include_symbols=True):
     """Generate secure random password with customizable options"""
     chars = ""
@@ -154,7 +154,7 @@ def generate_password(length=16, include_upper=True, include_lower=True, include
     if include_symbols: chars += "!@#$%^&*()_+-=[]{}|;:,.<>?"
     return ''.join(secrets.choice(chars) for _ in range(length))
 
-# ---------- VALIDATION ----------
+# POTVRŽIVANJE ŠIFRE 
 def validate_master_password(pwd):
     if len(pwd) < 8: return False
     if not re.search(r"[A-Z]", pwd): return False
@@ -163,7 +163,7 @@ def validate_master_password(pwd):
     if not re.search(r"[!@#$%^&*()+\-~`;:'\",.<>?]", pwd): return False
     return True
 
-# ---------- MASTER PASSWORD DIALOG ----------
+# DIJALOG ZA GLAVNU LOZINKU
 class MasterPasswordDialog(QDialog):
     def __init__(self):
         super().__init__()
@@ -197,7 +197,7 @@ class MasterPasswordDialog(QDialog):
     def get_password(self):
         return self.pwd_input.text()
 
-# ---------- ENTRY DIALOG ----------
+# DIJALOG ZA UNOS
 class EntryDialog(QDialog):
     def __init__(self, key, entry_id=None):
         super().__init__()
@@ -283,7 +283,7 @@ class EntryDialog(QDialog):
             add_entry_db(uname, pw, url, comment, self.key)
         self.accept()
 
-# ---------- CHANGE MASTER PASSWORD ----------
+# MENJANJE MASTER ŠIFRE
 class ChangeMasterDialog(QDialog):
     def __init__(self, key):
         super().__init__()
@@ -338,7 +338,7 @@ class ChangeMasterDialog(QDialog):
         QMessageBox.information(self, "Success", "Master password changed successfully!")
         self.accept()
 
-# ---------- MAIN WINDOW ----------
+# ---------- GLAVNI PROZOR ----------
 class MainWindow(QMainWindow):
     def __init__(self, key):
         super().__init__()
@@ -350,19 +350,19 @@ class MainWindow(QMainWindow):
         self.key = key
         self.resize(1200, 700)
         
-        # STATUS BAR FIRST
+        # STATUSNA TRAKA I
         self.status_label = QLabel("Loading...")
         self.statusBar().addWidget(self.status_label)
         footer = QLabel("ZeroBreach © 2026 - Šamec Uglješa | PBKDF2 + Fernet Encryption")
         footer.setStyleSheet("background-color:#808080; color:white; padding:4px;")
         self.statusBar().addPermanentWidget(footer)
         
-        # Central widget
+        # CENTRALNI INTERFEJS
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout(central_widget)
         
-        # Search box
+        # POLJE ZA PRETRAGU
         search_layout = QHBoxLayout()
         self.search_box = QLineEdit()
         self.search_box.setPlaceholderText("🔍 Search by username, URL or comment...")
@@ -370,7 +370,7 @@ class MainWindow(QMainWindow):
         search_layout.addWidget(self.search_box)
         layout.addLayout(search_layout)
         
-        # Table - 6 columns total (ID hidden + 5 visible)
+        # Table - 6 KOLONA UKUPNO (ID SKRIVEN + 5 VIDELJIVE)
         self.table = QTableWidget()
         self.table.setColumnCount(6)
         self.table.setHorizontalHeaderLabels(["ID", "Username", "Password", "Show", "URL", "Comment"])
@@ -381,7 +381,7 @@ class MainWindow(QMainWindow):
         self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
         layout.addWidget(self.table)
         
-        # HIDE ID COLUMN
+        # SAKRIVANJE ID KOLONE
         self.table.setColumnHidden(0, True)
         
         self.load_table()
@@ -423,21 +423,21 @@ class MainWindow(QMainWindow):
         data = get_entries_db(self.key)
         for row_idx, row_data in enumerate(data):
             self.table.insertRow(row_idx)
-            # Col 0: ID (hidden)
+            # Col 0: ID (SAKRIVENA)
             self.table.setItem(row_idx, 0, QTableWidgetItem(str(row_data[0])))
-            # Col 1: Username
+            # Col 1: KORISNIČKO IME
             self.table.setItem(row_idx, 1, QTableWidgetItem(row_data[1]))
-            # Col 2: Password (masked)
+            # Col 2: ŠIFRA (SAKRIVENA)
             pw_item = QTableWidgetItem("🔒 *****")
             self.table.setItem(row_idx, 2, pw_item)
-            # Col 3: Show button
+            # Col 3: DUGME PRIKAŽI
             btn_show = QPushButton("👁 Show")
             btn_show.setStyleSheet("background-color: #FFD700; color:black; font-weight:bold; padding:4px;")
             btn_show.clicked.connect(lambda checked, r=row_idx: self.toggle_password(r))
             self.table.setCellWidget(row_idx, 3, btn_show)
             # Col 4: URL
             self.table.setItem(row_idx, 4, QTableWidgetItem(row_data[3] or ""))
-            # Col 5: Comment (RESTORED!)
+            # Col 5: KOMENTR
             self.table.setItem(row_idx, 5, QTableWidgetItem(row_data[4] or ""))
         
         self.table.resizeRowsToContents()
@@ -457,21 +457,21 @@ class MainWindow(QMainWindow):
             
             if search_text == "" or search_text in username or search_text in url or search_text in comment:
                 self.table.insertRow(matching_rows)
-                # Col 0: ID (hidden)
+                # Col 0: ID (SAKRIVENO)
                 self.table.setItem(matching_rows, 0, QTableWidgetItem(str(row_data[0])))
-                # Col 1: Username
+                # Col 1: KORISNIČKO IME
                 self.table.setItem(matching_rows, 1, QTableWidgetItem(row_data[1]))
-                # Col 2: Password
+                # Col 2: ŠIFRA
                 pw_item = QTableWidgetItem("🔒 *****")
                 self.table.setItem(matching_rows, 2, pw_item)
-                # Col 3: Show button
+                # Col 3: DUGME PRIKAŽI
                 btn_show = QPushButton("👁 Show")
                 btn_show.setStyleSheet("background-color: #FFD700; color:black; font-weight:bold; padding:4px;")
                 btn_show.clicked.connect(lambda checked, r=matching_rows: self.toggle_password(r))
                 self.table.setCellWidget(matching_rows, 3, btn_show)
                 # Col 4: URL
                 self.table.setItem(matching_rows, 4, QTableWidgetItem(row_data[3] or ""))
-                # Col 5: Comment
+                # Col 5: KOMENTAR
                 self.table.setItem(matching_rows, 5, QTableWidgetItem(row_data[4] or ""))
                 matching_rows += 1
         
@@ -609,7 +609,7 @@ class MainWindow(QMainWindow):
                 logger.error(f"Import error: {e}")
                 QMessageBox.warning(self, "Error", "Invalid private key or corrupted file!")
 
-# ---------- MAIN EXECUTION ----------
+# ---------- GLAVNO IZVRŠENJE ----------
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
