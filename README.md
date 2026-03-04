@@ -76,6 +76,13 @@ Aplikacija je 100% lokalna, napisana u Python-u sa PyQt5 interfejsom i predstavl
 
 ---
 
+## 📷 Screenshot ekrana aplikacije
+
+![ZeroBreach UI](ss.png)
+---
+
+---
+
 # 🔐 Sigurnosni Model
 
 Master Password → PBKDF2 (100,000 iteracija + 16B salt) → master.key → Fernet (AES-128) → SQLite baza
